@@ -1,13 +1,14 @@
-FROM python:3.8-alpine as builder
+FROM python:3.8-slim-buster as builder
 
-RUN apk --no-cache add g++ zeromq-dev libffi-dev file make gcc musl-dev
+RUN apt update && apt install -y g++ libczmq-dev libffi-dev musl-dev build-essential
 COPY . /src
 WORKDIR /src
 RUN pip install .
 
-FROM python:3.8-alpine
+FROM python:3.8-slim-buster
 
-RUN apk --no-cache add zeromq && adduser -s /bin/false -D locust
+RUN apt update && apt install -y python3-zmq
+RUN adduser --gecos '' --shell /bin/false --disabled-password locust
 COPY --from=builder /usr/local/lib/python3.8/site-packages /usr/local/lib/python3.8/site-packages
 COPY --from=builder /usr/local/bin/locust /usr/local/bin/locust
 
